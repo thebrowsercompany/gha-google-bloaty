@@ -1,0 +1,30 @@
+name: 'Google Bloaty Action'
+description: 'Build and run google/bloaty on a set of files'
+author: Kendal Harland
+
+# When modifying inputs please update the permalink to this file in README.md.
+
+inputs:
+  bloaty-version:
+    description: A Git ref specifying the version of bloaty to build.
+    default: 'main'
+    required: false
+
+  bloaty-args:
+    description: The arguments to pass to bloaty.
+    default: ''
+    required: true
+
+  bloaty-output-file:
+    description: A filename where bloaty output should be written.
+    default: ''
+    required: false
+    
+  cache-bloaty:
+    description: Cache the bloaty executable for faster builds. The cache key is 'bloaty-<bloaty-version>' 
+    default: false
+    required: false
+
+runs:
+  using: node20
+  main: dist/index.js
