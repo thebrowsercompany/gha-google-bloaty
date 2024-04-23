@@ -16,4 +16,29 @@ An example workflow that runs this action:
 
 ### Inputs
 
-https://github.com/thebrowsercompany/gha-google-bloaty/blob/a95329cc3da083f2844c9c3f21efcbf450e79397/action.yml#L7-L26
+```yml
+bloaty-version:
+  description: A Git ref specifying the version of bloaty to build.
+  default: 'refs/heads/main'
+  required: false
+
+bloaty-checkout-dir:
+  description: Where to clone and build google/bloaty
+  default: ${{ github.workspace }}/.google-bloaty
+  required: false
+
+bloaty-args:
+  description: The arguments to pass to bloaty.
+  default: ''
+  required: true
+
+bloaty-output-file:
+  description: A filename where bloaty output should be written.
+  default: ''
+  required: false
+
+cache-bloaty:
+  description: Cache the bloaty executable for faster builds. The cache key is 'bloaty-<bloaty-version>'
+  default: 'false'
+  required: false
+```

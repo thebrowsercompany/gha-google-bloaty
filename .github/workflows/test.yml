@@ -1,0 +1,33 @@
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/source/
+
+      - name: Create test program
+        run: gcc ${{ github.workspace }}/source/test/main.c -o main
+
+      - name: Store abs path to program
+        run: echo "BINARY_PATH=${{ github.workspace }}/main.exe" | %{ $_ -replace '\\','/' } | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Build and run google/bloaty
+        uses: thebrowsercompany/gha-google-bloaty@main
+        with:
+          bloaty-version: 34f4a66559ad4938c1e629e9b5f54630b2b4d7b0 # Mar 2024
+          bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
+          bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
+          cache-bloaty: 'true'
+
+      - name: Show bloaty output
+        run: get-content ${{ github.workspace }}/bloaty-output.txt
