@@ -8,10 +8,22 @@ An example workflow that runs this action:
 
 ```yml
 - name: Run google/bloaty
-  uses: thebrowsercompany/gha-google-bloaty
+  uses: thebrowsercompany/gha-google-bloaty@v1
   with:
-    bloaty_version: main
-    bloaty_args: --csv -d inputfiles,segments main.exe
+    bloaty-args: --csv -d inputfiles,segments main.exe
+    bloaty-output-file: ${{ github.workspace }}/bloaty-main-exe.csv
+```
+
+An example workflow that runs this action and attempts to cache bloaty
+for subsequent runs:
+
+```yml
+- name: Run google/bloaty
+  uses: thebrowsercompany/gha-google-bloaty@v1
+  with:
+    bloaty-args: --csv -d inputfiles,segments main.exe
+    bloaty-output-file: ${{ github.workspace }}/bloaty-main-exe.csv
+    cache-bloaty: 'true'
 ```
 
 ### Inputs
@@ -28,17 +40,22 @@ bloaty-checkout-dir:
   required: false
 
 bloaty-args:
-  description: The arguments to pass to bloaty.
+  description: The arguments to pass to bloaty. Input filenames must use absolute paths.
   default: ''
   required: true
 
 bloaty-output-file:
   description: A filename where bloaty output should be written.
-  default: ''
-  required: false
+  default: 'bloaty-output'
+  required: true
 
 cache-bloaty:
-  description: Cache the bloaty executable for faster builds. The cache key is 'bloaty-<bloaty-version>'
+  description: Cache the bloaty executable for faster builds.
   default: 'false'
+  required: false
+
+cache-bloaty-key:
+  description: The key to use when caching bloaty. Only used if 'cache-bloaty' is true. Defaults to bloaty-<bloaty-version>
+  default: ''
   required: false
 ```
