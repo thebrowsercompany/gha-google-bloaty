@@ -14,6 +14,19 @@ An example workflow that runs this action:
     bloaty-output-file: ${{ github.workspace }}/bloaty-main-exe.csv
 ```
 
+An example workflow that uses globs to find files:
+
+```yml
+- name: Run google/bloaty
+  uses: thebrowsercompany/gha-google-bloaty@v1
+  with:
+    bloaty-args: --csv -d inputfiles,segments main.exe
+    bloaty-output-file: ${{ github.workspace }}/bloaty-main-exe.csv
+    bloaty-input-files: |
+      ${{ github.workspace }}/build/**/*.dll
+      ${{ github.workspace }}/out/example.exe
+```
+
 An example workflow that runs this action and attempts to cache bloaty
 for subsequent runs:
 
@@ -43,6 +56,11 @@ bloaty-args:
   description: The arguments to pass to bloaty. Input filenames must use absolute paths.
   default: ''
   required: true
+
+bloaty-input-files:
+  description: A list of input filenames and glob patterns separated by newlines. You cannot set bloaty's -c flag when using this.
+  default: ''
+  required: false  
 
 bloaty-output-file:
   description: A filename where bloaty output should be written.
