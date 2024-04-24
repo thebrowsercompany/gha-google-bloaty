@@ -18,6 +18,11 @@ inputs:
     default: ''
     required: true
 
+  bloaty-input-files:
+    description: A list of input filenames and glob patterns separated by newlines. You cannot set bloaty's -c flag when using this.
+    default: ''
+    required: false  
+
   bloaty-output-file:
     description: A filename where bloaty output should be written.
     default: 'bloaty-output'
@@ -54,6 +59,38 @@ runs:
       with:
         key: ${{ steps.cache-key.outputs.cache-key }}
         path: .caches/bloaty
+
+    - name: Generate bloaty options file
+      shell: bash
+      run: |
+        BloatyOptionsFile="${{ github.workspace }}/.bloaty.textproto" 
+        mkdir -p $(dirname ${BloatyOptionsFile})
+        touch $BloatyOptionsFile
+        echo "BLOATY_OPTIONS_FILE=$BloatyOptionsFile" >> $GITHUB_ENV
+
+      # Bash is used here because with globstar enabled we can easily handle recursive
+      # glob patterns.
+    - name: Generate bloaty options file contents
+      if: inputs.bloaty-input-files != ''
+      shell: bash
+      run: |
+          # Enables recursive glob patterns. Requires Bash v4+.
+          shopt -s globstar
+          
+          # Parse input patterns, taking care to convert \ to / to avoid
+          # incorrectly escaping filenames that come from windows.
+          BloatyInputFiles=$(echo "${{ inputs.bloaty-input-files }}" | sed 's/\\/\//g')
+          IFS=$'\n' read -d '%' -a Patterns <<<"${BloatyInputFiles}%"
+          declare -p Patterns
+
+          # Glob files and generate filenames in the options file, replacing backslashes
+          # with forward slashes.
+          for Pattern in ${Patterns[@]}; do
+            ls "${Pattern}" | xargs -I {} echo "filename: \"{}\"" >> $BLOATY_OPTIONS_FILE
+          done
+
+          echo "-- Contents of $BLOATY_OPTIONS_FILE"
+          cat $BLOATY_OPTIONS_FILE
 
     - name: Checkout google/bloaty
       if: steps.cache.outputs.cache-hit != 'true'
@@ -97,4 +134,4 @@ runs:
 
     - name: Run bloaty
       shell: pwsh
-      run: bloaty ${{ inputs.bloaty-args }} | Out-File ${{ inputs.bloaty-output-file }} -Encoding utf8
+      run: bloaty -c ${{ env.BLOATY_OPTIONS_FILE }} ${{ inputs.bloaty-args }} | Out-File ${{ inputs.bloaty-output-file }} -Encoding utf8

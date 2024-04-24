@@ -3,8 +3,15 @@ on:
   push:
   workflow_dispatch:
 
+env:
+  BLOATY_VERSION: 34f4a66559ad4938c1e629e9b5f54630b2b4d7b0 # Mar 2024
+
+# The tests below won't fail as long as bloaty runs succesfully.
+# Eyeball the bloaty output at the end of each job and make sure
+# it's as expected.
+
 jobs:
-  test:
+  test-build-and-run:
     strategy:
       matrix:
         os: [windows-latest]
@@ -24,12 +31,52 @@ jobs:
       - name: Build and run google/bloaty
         uses: thebrowsercompany/gha-google-bloaty@main
         with:
-          bloaty-version: 34f4a66559ad4938c1e629e9b5f54630b2b4d7b0 # Mar 2024
+          bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
           bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
 
       - name: Show bloaty output
-        run: get-content ${{ github.workspace }}/bloaty-output.txt
+        run: Get-Content ${{ github.workspace }}/bloaty-output.txt
+
+  test-bloaty-input-files:
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ github.workspace }}/source/
+
+      - name: Create test programs
+        run: |
+          gcc ${{ github.workspace }}/source/test/main.c -o main
+
+          New-Item -Path ${{ github.workspace }}/root/child/grandchild -ItemType "directory"
+          New-Item -Path ${{ github.workspace }}/neighbor/ -ItemType "directory"
+          Copy-Item main.exe ${{ github.workspace }}/neighbor/main.exe
+          Copy-Item main.exe ${{ github.workspace }}/root/main.1.exe
+          Copy-Item main.exe ${{ github.workspace }}/root/child/grandchild/main.2.exe
+          New-Item -Path ${{ github.workspace }}/root/ignored.txt -ItemType "file"
+          New-Item -Path ${{ github.workspace }}/root/child/ignored.txt -ItemType "file"
+          New-Item -Path ${{ github.workspace }}/root/child/grandchild/ignored.txt -ItemType "file"
+
+      - name: Build and run google/bloaty
+        uses: thebrowsercompany/gha-google-bloaty@support-input-files
+        with:
+          bloaty-version: ${{ env.BLOATY_VERSION }}
+          bloaty-args: -d inputfiles,segments
+          # Users should be able to pass a combo of filenames and recursive glob patterns 
+          bloaty-input-files: |
+            ${{ github.workspace }}/root/**/*.1.exe
+            ${{ github.workspace }}/root/**/*.2.exe
+            ${{ github.workspace }}/neighbor/main.exe
+          bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
+          cache-bloaty: 'true'
+
+      - name: Show bloaty output
+        run: Get-Content ${{ github.workspace }}/bloaty-output.txt
 
   test-cache-bloaty:
     strategy:
@@ -51,14 +98,15 @@ jobs:
       - name: Build and run google/bloaty (should create the cache)
         uses: thebrowsercompany/gha-google-bloaty@main
         with:
-          bloaty-version: 34f4a66559ad4938c1e629e9b5f54630b2b4d7b0 # Mar 2024
+          bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
           bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
           cache-bloaty: 'true'
+          # Make sure we don't reuse caches across this job's test runs.
           cache-bloaty-key: test-bloaty-${{ github.sha }}
 
       - name: Show bloaty output
-        run: get-content ${{ github.workspace }}/bloaty-output.txt
+        run: Get-Content ${{ github.workspace }}/bloaty-output.txt
 
       - name: Assert bloaty cache exists
         uses: actions/cache/restore@v3
@@ -77,4 +125,4 @@ jobs:
           cache-bloaty-key: test-bloaty-${{ github.sha }}
 
       - name: Show bloaty output
-        run: get-content ${{ github.workspace }}/bloaty-output.txt
+        run: Get-Content ${{ github.workspace }}/bloaty-output.txt
