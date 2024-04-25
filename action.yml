@@ -86,7 +86,10 @@ runs:
           # Glob files and generate filenames in the options file, replacing backslashes
           # with forward slashes.
           for Pattern in ${Patterns[@]}; do
-            ls "${Pattern}" | xargs -I {} echo "filename: \"{}\"" >> $BLOATY_OPTIONS_FILE
+            # We don't use xargs here because it can't handle large inputs.
+            for Filename in $(ls "${Pattern}"); do
+              echo "filename: \"${Filename}\"" >> $BLOATY_OPTIONS_FILE
+            done
           done
 
           echo "-- Contents of $BLOATY_OPTIONS_FILE"
