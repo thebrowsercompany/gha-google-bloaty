@@ -21,7 +21,7 @@ inputs:
   bloaty-input-files:
     description: A list of input filenames and glob patterns separated by newlines. You cannot set bloaty's -c flag when using this.
     default: ''
-    required: false  
+    required: false
 
   bloaty-output-file:
     description: A filename where bloaty output should be written.
@@ -63,7 +63,7 @@ runs:
     - name: Generate bloaty options file
       shell: bash
       run: |
-        BloatyOptionsFile="${{ github.workspace }}/.bloaty.textproto" 
+        BloatyOptionsFile="${{ github.workspace }}/.bloaty.textproto"
         mkdir -p $(dirname ${BloatyOptionsFile})
         touch $BloatyOptionsFile
         echo "BLOATY_OPTIONS_FILE=$BloatyOptionsFile" >> $GITHUB_ENV
@@ -76,7 +76,7 @@ runs:
       run: |
           # Enables recursive glob patterns. Requires Bash v4+.
           shopt -s globstar
-          
+
           # Parse input patterns, taking care to convert \ to / to avoid
           # incorrectly escaping filenames that come from windows.
           BloatyInputFiles=$(echo "${{ inputs.bloaty-input-files }}" | sed 's/\\/\//g')
@@ -108,10 +108,32 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: seanmiddleditch/gha-setup-ninja@v4
 
-    - name: Configure bloaty
-      if: steps.cache.outputs.cache-hit != 'true'
+    # Below we use cl.exe for arm64 (MSVC) and the default compiler for x64 (Usually GNU 12.2.0 on windows-latest).
+    # This is because:
+    #  1. g++ doesn't work on our arm64 images which don't have a Windows SDK old enough to support the g++11 standard,
+    #     which is required by google/bloaty's dependency on google/re2.
+    #  2. clang-cl does not work with google/bloaty's pinned version of protocolfbuffers/protobuf because of
+    #     https://github.com/protocolbuffers/protobuf/issues/6503. This issue was fixed in
+    #     https://github.com/protocolbuffers/protobuf/pull/8139 but third_party/protobuf is pinned to a git
+    #     commit from 2019 which still has the bug.
+
+    - name: Configure bloaty (arm64)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.arch == 'ARM64'
       shell: pwsh
-      run: cmake -B ${{ inputs.bloaty-checkout-dir }}/.build -S ${{ inputs.bloaty-checkout-dir }} -G Ninja
+      run: |
+        cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
+          -S ${{ inputs.bloaty-checkout-dir }} `
+          -G Ninja `
+          -D CMAKE_CXX_COMPILER="cl" `
+          -D CMAKE_C_COMPILER="cl"
+
+    - name: Configure bloaty (x64)
+      if: steps.cache.outputs.cache-hit != 'true' && runner.arch != 'ARM64'
+      shell: pwsh
+      run: |
+        cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
+          -S ${{ inputs.bloaty-checkout-dir }} `
+          -G Ninja
 
     - name: Build bloaty
       if: steps.cache.outputs.cache-hit != 'true'
