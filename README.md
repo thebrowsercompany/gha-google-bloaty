@@ -1,5 +1,7 @@
 # gha-google-bloaty
 
+[![.github/workflows/test.yml](https://github.com/thebrowsercompany/gha-google-bloaty/actions/workflows/test.yml/badge.svg)](https://github.com/thebrowsercompany/gha-google-bloaty/actions/workflows/test.yml)
+
 A GitHub action that builds and runs google bloaty
 
 ## Usage
