@@ -113,20 +113,11 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: seanmiddleditch/gha-setup-ninja@v4
 
-    # Below we use cl.exe for arm64 (MSVC) and the default compiler for x64 (Usually GNU 12.2.0 on windows-latest).
-    # This is because:
-    #  1. g++ doesn't work on our arm64 images which don't have a Windows SDK old enough to support the g++11 standard,
-    #     which is required by google/bloaty's dependency on google/re2.
-    #  2. clang-cl does not work with google/bloaty's pinned version of protocolfbuffers/protobuf because of
-    #     https://github.com/protocolbuffers/protobuf/issues/6503. This issue was fixed in
-    #     https://github.com/protocolbuffers/protobuf/pull/8139 but third_party/protobuf is pinned to a git
-    #     commit from 2019 which still has the bug.
-
     - name: Show runner.arch context
       shell: pwsh
       run: echo "${{ runner.arch }}"
 
-    - name: Configure bloaty (arm64)
+    - name: Configure bloaty
       if: steps.cache.outputs.cache-hit != 'true' && inputs.compiler != ''
       shell: pwsh
       run: |
@@ -136,7 +127,7 @@ runs:
           -D CMAKE_CXX_COMPILER="${{ inputs.compiler }}" `
           -D CMAKE_C_COMPILER="${{ inputs.compiler }}"
 
-    - name: Configure bloaty (x64)
+    - name: Configure bloaty
       if: steps.cache.outputs.cache-hit != 'true' && inputs.compiler == ''
       shell: pwsh
       run: |
