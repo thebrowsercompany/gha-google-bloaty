@@ -38,6 +38,11 @@ inputs:
     default: ''
     required: false
 
+  compiler:
+    description: Tell cmake to use this compiler.
+    default: '' # Let cmake decide.
+    required: false
+
 runs:
   using: composite
   steps:
@@ -117,18 +122,22 @@ runs:
     #     https://github.com/protocolbuffers/protobuf/pull/8139 but third_party/protobuf is pinned to a git
     #     commit from 2019 which still has the bug.
 
+    - name: Show runner.arch context
+      shell: pwsh
+      run: echo "${{ runner.arch }}"
+
     - name: Configure bloaty (arm64)
-      if: steps.cache.outputs.cache-hit != 'true' && runner.arch == 'ARM64'
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.compiler != ''
       shell: pwsh
       run: |
         cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
           -S ${{ inputs.bloaty-checkout-dir }} `
           -G Ninja `
-          -D CMAKE_CXX_COMPILER="cl" `
-          -D CMAKE_C_COMPILER="cl"
+          -D CMAKE_CXX_COMPILER="${{ inputs.compiler }}" `
+          -D CMAKE_C_COMPILER="${{ inputs.compiler }}"
 
     - name: Configure bloaty (x64)
-      if: steps.cache.outputs.cache-hit != 'true' && runner.arch != 'ARM64'
+      if: steps.cache.outputs.cache-hit != 'true' && inputs.compiler == ''
       shell: pwsh
       run: |
         cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
