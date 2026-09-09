@@ -29,7 +29,7 @@ jobs:
         run: echo "BINARY_PATH=${{ github.workspace }}/main.exe" | %{ $_ -replace '\\','/' } | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build and run google/bloaty
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
@@ -63,7 +63,7 @@ jobs:
           New-Item -Path ${{ github.workspace }}/root/child/grandchild/ignored.txt -ItemType "file"
 
       - name: Build and run google/bloaty
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments
@@ -96,7 +96,7 @@ jobs:
         run: echo "BINARY_PATH=${{ github.workspace }}/main.exe" | %{ $_ -replace '\\','/' } | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build and run google/bloaty (should create the cache)
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
@@ -117,7 +117,7 @@ jobs:
           path: .caches/bloaty
 
       - name: Run google/bloaty (should cache-hit)
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: main
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
