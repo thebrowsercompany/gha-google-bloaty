@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  BLOATY_VERSION: 6dcd80bc4d07c6ce1c095fc94a705f7a70e283fc # Fix build with CMake 4+
+  BLOATY_VERSION: 25b99c66dd0067761e946349d66c9cb6f1b699d5 # Includes CMake 4 and bundled zlib fixes
 
 # The tests below won't fail as long as bloaty runs succesfully.
 # Eyeball the bloaty output at the end of each job and make sure
