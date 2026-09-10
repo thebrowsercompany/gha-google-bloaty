@@ -124,7 +124,6 @@ runs:
         cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
           -S ${{ inputs.bloaty-checkout-dir }} `
           -G Ninja `
-          -D CMAKE_POLICY_VERSION_MINIMUM=3.5 `
           -D CMAKE_CXX_COMPILER="${{ inputs.compiler }}" `
           -D CMAKE_C_COMPILER="${{ inputs.compiler }}"
 
@@ -134,8 +133,7 @@ runs:
       run: |
         cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
           -S ${{ inputs.bloaty-checkout-dir }} `
-          -G Ninja `
-          -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+          -G Ninja
 
     - name: Build bloaty
       if: steps.cache.outputs.cache-hit != 'true'
