@@ -14,7 +14,7 @@ jobs:
   test-build-and-run:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -41,7 +41,7 @@ jobs:
   test-bloaty-input-files:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -81,7 +81,7 @@ jobs:
   test-cache-bloaty:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     steps:
