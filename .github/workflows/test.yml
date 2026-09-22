@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
 
 env:
-  BLOATY_VERSION: 34f4a66559ad4938c1e629e9b5f54630b2b4d7b0 # Mar 2024
+  # google/bloaty main as of 2026-08-28; includes CMake 4 and bundled zlib fixes.
+  BLOATY_VERSION: 25b99c66dd0067761e946349d66c9cb6f1b699d5
 
 # The tests below won't fail as long as bloaty runs succesfully.
 # Eyeball the bloaty output at the end of each job and make sure
@@ -14,7 +15,7 @@ jobs:
   test-build-and-run:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -29,7 +30,7 @@ jobs:
         run: echo "BINARY_PATH=${{ github.workspace }}/main.exe" | %{ $_ -replace '\\','/' } | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build and run google/bloaty
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
@@ -41,7 +42,7 @@ jobs:
   test-bloaty-input-files:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -63,7 +64,7 @@ jobs:
           New-Item -Path ${{ github.workspace }}/root/child/grandchild/ignored.txt -ItemType "file"
 
       - name: Build and run google/bloaty
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments
@@ -81,7 +82,7 @@ jobs:
   test-cache-bloaty:
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -96,7 +97,7 @@ jobs:
         run: echo "BINARY_PATH=${{ github.workspace }}/main.exe" | %{ $_ -replace '\\','/' } | Out-File $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Build and run google/bloaty (should create the cache)
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
@@ -117,7 +118,7 @@ jobs:
           path: .caches/bloaty
 
       - name: Run google/bloaty (should cache-hit)
-        uses: thebrowsercompany/gha-google-bloaty@main
+        uses: ./source
         with:
           bloaty-version: main
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
