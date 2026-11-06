@@ -28,6 +28,11 @@ inputs:
     default: 'bloaty-output'
     required: true
 
+  bloaty-repository:
+    description: The GitHub repository (owner/name) to clone bloaty from.
+    default: 'google/bloaty'
+    required: false
+
   cache-bloaty:
     description: Cache the bloaty executable for faster builds.
     default: 'false'
@@ -104,7 +109,7 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
-        repository: google/bloaty
+        repository: ${{ inputs.bloaty-repository }}
         ref: ${{ inputs.bloaty-version }}
         path: ${{ inputs.bloaty-checkout-dir }}
         show-progress: false
@@ -124,7 +129,6 @@ runs:
         cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
           -S ${{ inputs.bloaty-checkout-dir }} `
           -G Ninja `
-          -D CMAKE_POLICY_VERSION_MINIMUM=3.5 `
           -D CMAKE_CXX_COMPILER="${{ inputs.compiler }}" `
           -D CMAKE_C_COMPILER="${{ inputs.compiler }}"
 
@@ -134,8 +138,7 @@ runs:
       run: |
         cmake -B ${{ inputs.bloaty-checkout-dir }}/.build `
           -S ${{ inputs.bloaty-checkout-dir }} `
-          -G Ninja `
-          -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+          -G Ninja
 
     - name: Build bloaty
       if: steps.cache.outputs.cache-hit != 'true'
