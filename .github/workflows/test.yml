@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
 
 env:
-  # google/bloaty main as of 2026-08-28; includes CMake 4 and bundled zlib fixes.
-  BLOATY_VERSION: 25b99c66dd0067761e946349d66c9cb6f1b699d5
+  # TODO: Switch back to google/bloaty once https://github.com/google/bloaty/pull/530 is merged.
+  BLOATY_REPOSITORY: thebrowsercompany/bloaty
+  BLOATY_VERSION: 4a4fb505cb0ca9f2d716c7c79ddd2f87f20248e3
 
 # The tests below won't fail as long as bloaty runs succesfully.
 # Eyeball the bloaty output at the end of each job and make sure
@@ -32,6 +33,7 @@ jobs:
       - name: Build and run google/bloaty
         uses: ./source
         with:
+          bloaty-repository: ${{ env.BLOATY_REPOSITORY }}
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
           bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
@@ -66,6 +68,7 @@ jobs:
       - name: Build and run google/bloaty
         uses: ./source
         with:
+          bloaty-repository: ${{ env.BLOATY_REPOSITORY }}
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments
           # Users should be able to pass a combo of filenames and recursive glob patterns 
@@ -99,6 +102,7 @@ jobs:
       - name: Build and run google/bloaty (should create the cache)
         uses: ./source
         with:
+          bloaty-repository: ${{ env.BLOATY_REPOSITORY }}
           bloaty-version: ${{ env.BLOATY_VERSION }}
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
           bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
@@ -120,6 +124,7 @@ jobs:
       - name: Run google/bloaty (should cache-hit)
         uses: ./source
         with:
+          bloaty-repository: ${{ env.BLOATY_REPOSITORY }}
           bloaty-version: main
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
           cache-bloaty: 'true'
