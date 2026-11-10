@@ -74,8 +74,8 @@ cache-bloaty:
   default: 'false'
   required: false
 
-cache-bloaty-key:
-  description: The key to use when caching bloaty. Only used if 'cache-bloaty' is true. Defaults to bloaty-<bloaty-version>
+cache-bloaty-key-prefix:
+  description: A prefix for the cache key. The action appends the Bloaty version. Only used if 'cache-bloaty' is true. Defaults to `bloaty`.
   default: ''
   required: false
 ```

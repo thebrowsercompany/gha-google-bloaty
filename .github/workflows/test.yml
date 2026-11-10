@@ -108,7 +108,7 @@ jobs:
           bloaty-output-file: ${{ github.workspace }}/bloaty-output.txt
           cache-bloaty: 'true'
           # Make sure we don't reuse caches across this job's test runs.
-          cache-bloaty-key: test-bloaty-${{ github.sha }}
+          cache-bloaty-key-prefix: test-bloaty-${{ github.sha }}
 
       - name: Show bloaty output
         run: Get-Content ${{ github.workspace }}/bloaty-output.txt
@@ -128,7 +128,7 @@ jobs:
           bloaty-version: main
           bloaty-args: -d inputfiles,segments ${{ env.BINARY_PATH }}
           cache-bloaty: 'true'
-          cache-bloaty-key: test-bloaty-${{ github.sha }}
+          cache-bloaty-key-prefix: test-bloaty-${{ github.sha }}
 
       - name: Show bloaty output
         run: Get-Content ${{ github.workspace }}/bloaty-output.txt
