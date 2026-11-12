@@ -38,8 +38,8 @@ inputs:
     default: 'false'
     required: false
 
-  cache-bloaty-key:
-    description: The key to use when caching bloaty. Only used if 'cache-bloaty' is true. Defaults to bloaty-<bloaty-version>
+  cache-bloaty-key-prefix:
+    description: A prefix for the cache key. The action appends the Bloaty version. Only used if 'cache-bloaty' is true. Defaults to `bloaty`.
     default: ''
     required: false
 
@@ -56,8 +56,8 @@ runs:
       id: cache-key
       shell: pwsh
       run: |
-        if ("${{ inputs.cache-bloaty-key }}") {
-          "cache-key=${{ inputs.cache-bloaty-key }}" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
+        if ("${{ inputs.cache-bloaty-key-prefix }}") {
+          "cache-key=${{ inputs.cache-bloaty-key-prefix }}-${{ inputs.bloaty-version }}" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
         } else {
           "cache-key=bloaty-${{ inputs.bloaty-version }}" | Out-File $env:GITHUB_OUTPUT -Encoding utf8 -Append
         }
